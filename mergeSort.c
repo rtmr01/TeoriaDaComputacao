@@ -81,6 +81,12 @@ int main() {
     int num_execucoes = 30;
     srand(time(NULL));
 
+    FILE *f = fopen("tempos_c.csv", "a");  // abrir o arquivo antes do loop
+    if (!f) {
+        perror("Erro ao abrir o arquivo");
+        return 1;
+    }
+
     for (int t = 0; t < 3; t++) {
         int n = tamanhos[t];
         double tempos[num_execucoes];
@@ -104,7 +110,12 @@ int main() {
         printf("Execuções: %d\n", num_execucoes);
         printf("Tempo médio: %.6f segundos\n", media);
         printf("Desvio padrão: %.6f segundos\n", desvio);
+
+        // escreve no CSV
+        fprintf(f, "%d,%.6f\n", n, media);
     }
 
+    fclose(f);
     return 0;
 }
+

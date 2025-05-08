@@ -2,7 +2,8 @@ import random
 import time
 import math
 import matplotlib.pyplot as plt
-import numpy as np
+import pandas as pd
+import os
 
 # Implementação do Merge Sort
 def merge_sort(arr):
@@ -60,20 +61,17 @@ def executar_testes(tamanhos, execucoes=30):
 
     return resultados
 
-# Tamanhos dos arrays para teste
+# === PARTE 1: Merge Sort vs Complexidade Teórica ===
 tamanhos_teste = [100, 1000, 10000, 20000, 30000]
-
-# Executar os testes
 resultados = executar_testes(tamanhos_teste)
 
-# Preparar dados para gráfico
 tamanhos = [r["tamanho"] for r in resultados]
 tempos = [r["media"] for r in resultados]
 desvios = [r["desvio"] for r in resultados]
 nlogn = [t * math.log2(t) for t in tamanhos]
 nlogn_normalizado = [x / max(nlogn) * max(tempos) for x in nlogn]
 
-# Plotar o gráfico
+# Gráfico 1 – Tempo vs n log n
 plt.figure(figsize=(10, 6))
 plt.plot(tamanhos, tempos, marker='o', label="Tempo médio (Merge Sort)")
 plt.plot(tamanhos, nlogn_normalizado, linestyle='--', label="Curva teórica n log n")
@@ -85,4 +83,31 @@ plt.ylabel("Tempo (segundos)")
 plt.legend()
 plt.grid(True)
 plt.tight_layout()
+plt.savefig("/Users/rodrigotorres/Downloads/grafico_merge_sort_python.png")#ALTEREM ISSO PQ ISSO EH DO MEU PC 
 plt.show()
+
+# === PARTE 2: Comparação Python vs C ===
+# Certifique-se de que tempos_c.csv está no mesmo diretório
+if os.path.exists("tempos_c.csv"):
+    dados_c = pd.read_csv("tempos_c.csv", names=["tamanho", "tempo_c"])
+
+    dados_python = pd.DataFrame({
+        "tamanho": tamanhos,
+        "tempo_python": tempos
+    })
+
+    comparacao = pd.merge(dados_python, dados_c, on="tamanho")
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(comparacao["tamanho"], comparacao["tempo_python"], marker='o', label="Python")
+    plt.plot(comparacao["tamanho"], comparacao["tempo_c"], marker='s', label="C")
+    plt.title("Comparação de Desempenho: Merge Sort em Python vs C")
+    plt.xlabel("Tamanho do array")
+    plt.ylabel("Tempo médio (s)")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig("/Users/rodrigotorres/Downloads/grafico_comparacao_python_c.png") #ALTEREM ISSO PQ ISSO EH DO MEU PC 
+    plt.show()
+else:
+    print("Arquivo tempos_c.csv não encontrado. Pulei o gráfico comparativo com C.")
