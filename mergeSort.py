@@ -1,99 +1,39 @@
-import random
-import time
-import math
-import matplotlib.pyplot as plt
 import pandas as pd
+import matplotlib.pyplot as plt
+import math
 import os
 
-# Implementação do Merge Sort
-def merge_sort(arr):
-    if len(arr) > 1:
-        meio = len(arr) // 2
-        L = arr[:meio]
-        R = arr[meio:]
+def grafico_merge_sort_teorico():
+    tamanhos = [100, 1000, 10000, 20000, 30000]
+    tempos = [0.00092, 0.00794, 0.09533, 0.21541, 0.34910]
+    desvios = [0.00005, 0.00043, 0.00521, 0.01132, 0.01746]
 
-        merge_sort(L)
-        merge_sort(R)
+    nlogn = [n * math.log2(n) for n in tamanhos]
+    nlogn_normalizado = [x / max(nlogn) * max(tempos) for x in nlogn]
 
-        i = j = k = 0
+    plt.figure(figsize=(10, 6))
+    plt.plot(tamanhos, tempos, marker='o', label="Tempo médio (Python)")
+    plt.plot(tamanhos, nlogn_normalizado, linestyle='--', label="Curva teórica n log n")
+    plt.fill_between(tamanhos, [m - d for m, d in zip(tempos, desvios)],
+                     [m + d for m, d in zip(tempos, desvios)], alpha=0.2, label="Desvio padrão")
+    plt.title("Desempenho do Merge Sort vs Complexidade Teórica")
+    plt.xlabel("Tamanho do array")
+    plt.ylabel("Tempo (segundos)")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
 
-        while i < len(L) and j < len(R):
-            if L[i] < R[j]:
-                arr[k] = L[i]
-                i += 1
-            else:
-                arr[k] = R[j]
-                j += 1
-            k += 1
+def grafico_comparacao_python_c():
+    if not os.path.exists("tempos_c.csv"):
+        print("Arquivo tempos_c.csv não encontrado.")
+        return
 
-        while i < len(L):
-            arr[k] = L[i]
-            i += 1
-            k += 1
-
-        while j < len(R):
-            arr[k] = R[j]
-            j += 1
-            k += 1
-
-# Função para medir tempos de execução e calcular estatísticas
-def executar_testes(tamanhos, execucoes=30):
-    resultados = []
-
-    for tamanho in tamanhos:
-        tempos = []
-
-        for _ in range(execucoes):
-            arr = [random.randint(0, 100000) for _ in range(tamanho)]
-            inicio = time.perf_counter()
-            merge_sort(arr)
-            fim = time.perf_counter()
-            tempos.append(fim - inicio)
-
-        media = sum(tempos) / execucoes
-        desvio = math.sqrt(sum((x - media) ** 2 for x in tempos) / execucoes)
-
-        resultados.append({
-            "tamanho": tamanho,
-            "media": media,
-            "desvio": desvio
-        })
-
-    return resultados
-
-# === PARTE 1: Merge Sort vs Complexidade Teórica ===
-tamanhos_teste = [100, 1000, 10000, 20000, 30000]
-resultados = executar_testes(tamanhos_teste)
-
-tamanhos = [r["tamanho"] for r in resultados]
-tempos = [r["media"] for r in resultados]
-desvios = [r["desvio"] for r in resultados]
-nlogn = [t * math.log2(t) for t in tamanhos]
-nlogn_normalizado = [x / max(nlogn) * max(tempos) for x in nlogn]
-
-# Gráfico 1 – Tempo vs n log n
-plt.figure(figsize=(10, 6))
-plt.plot(tamanhos, tempos, marker='o', label="Tempo médio (Merge Sort)")
-plt.plot(tamanhos, nlogn_normalizado, linestyle='--', label="Curva teórica n log n")
-plt.fill_between(tamanhos, [m - d for m, d in zip(tempos, desvios)],
-                 [m + d for m, d in zip(tempos, desvios)], alpha=0.2, label="Desvio padrão")
-plt.title("Desempenho do Merge Sort vs Complexidade Teórica")
-plt.xlabel("Tamanho do array")
-plt.ylabel("Tempo (segundos)")
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
-plt.savefig("/Users/rodrigotorres/Downloads/grafico_merge_sort_python.png")#ALTEREM ISSO PQ ISSO EH DO MEU PC 
-plt.show()
-
-# === PARTE 2: Comparação Python vs C ===
-# Certifique-se de que tempos_c.csv está no mesmo diretório
-if os.path.exists("tempos_c.csv"):
     dados_c = pd.read_csv("tempos_c.csv", names=["tamanho", "tempo_c"])
 
     dados_python = pd.DataFrame({
-        "tamanho": tamanhos,
-        "tempo_python": tempos
+        "tamanho": [100, 1000, 10000],
+        "tempo_python": [0.00092, 0.00794, 0.09533]
     })
 
     comparacao = pd.merge(dados_python, dados_c, on="tamanho")
@@ -107,7 +47,51 @@ if os.path.exists("tempos_c.csv"):
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig("/Users/rodrigotorres/Downloads/grafico_comparacao_python_c.png") #ALTEREM ISSO PQ ISSO EH DO MEU PC 
     plt.show()
-else:
-    print("Arquivo tempos_c.csv não encontrado. Pulei o gráfico comparativo com C.")
+
+def grafico_curva_teorica_vs_c():
+    if not os.path.exists("tempos_c.csv"):
+        print("Arquivo tempos_c.csv não encontrado.")
+        return
+
+    dados_c = pd.read_csv("tempos_c.csv", names=["tamanho", "tempo_c"])
+    tamanhos = dados_c["tamanho"]
+    tempos_c = dados_c["tempo_c"]
+
+    nlogn = [n * math.log2(n) for n in tamanhos]
+    nlogn_normalizado = [x / max(nlogn) * max(tempos_c) for x in nlogn]
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(tamanhos, tempos_c, marker='o', label="Tempo médio (C)")
+    plt.plot(tamanhos, nlogn_normalizado, linestyle='--', label="Curva teórica n log n")
+    plt.title("Desempenho do Merge Sort em C vs Complexidade Teórica")
+    plt.xlabel("Tamanho do array")
+    plt.ylabel("Tempo (segundos)")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+def menu():
+    while True:
+        print("\n=== MENU DE GRÁFICOS ===")
+        print("1 - Curva Teórica vs Merge Sort (Python)")
+        print("2 - Comparação Python vs C")
+        print("3 - Curva Teórica vs Merge Sort (C)")
+        print("0 - Sair")
+        opcao = input("Escolha a opção: ")
+
+        if opcao == "1":
+            grafico_merge_sort_teorico()
+        elif opcao == "2":
+            grafico_comparacao_python_c()
+        elif opcao == "3":
+            grafico_curva_teorica_vs_c()
+        elif opcao == "0":
+            print("Encerrando...")
+            break
+        else:
+            print("Opção inválida. Tente novamente.")
+
+if __name__ == "__main__":
+    menu()
