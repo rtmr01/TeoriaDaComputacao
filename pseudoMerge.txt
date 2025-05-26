@@ -1,0 +1,38 @@
+Function MERGE_SORT(array, left, right)
+    if left < right then
+        mid ← (left + right) / 2
+        MERGE_SORT(array, left, mid)
+        MERGE_SORT(array, mid + 1, right)
+        MERGE(array, left, mid, right)
+
+Function MERGE(array, left, mid, right)
+    n1 ← mid - left + 1
+    n2 ← right - mid
+
+    Create temporary arrays L[1..n1] and R[1..n2]
+
+    for i ← 0 to n1 - 1 do
+        L[i] ← array[left + i]
+    for j ← 0 to n2 - 1 do
+        R[j] ← array[mid + 1 + j]
+
+    i ← 0, j ← 0, k ← left
+
+    while i < n1 and j < n2 do
+        if L[i] ≤ R[j] then
+            array[k] ← L[i]
+            i ← i + 1
+        else
+            array[k] ← R[j]
+            j ← j + 1
+        k ← k + 1
+
+    while i < n1 do
+        array[k] ← L[i]
+        i ← i + 1
+        k ← k + 1
+
+    while j < n2 do
+        array[k] ← R[j]
+        j ← j + 1
+        k ← k + 1
