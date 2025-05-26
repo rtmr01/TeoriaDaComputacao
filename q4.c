@@ -1,5 +1,3 @@
-//algoritmo de testes de entrada para a questão 4.
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -68,13 +66,10 @@ double calcularDesvioPadrao(double tempos[], double media) {
     return sqrt(soma / EXECUCOES);
 }
 
-void testarCaso(const char* nomeCaso, int tamanho, void (*preencher)(int*, int)) {
+void testarCasoCSV(FILE* arquivo, const char* nomeCaso, int tamanho, void (*preencher)(int*, int)) {
     double tempos[EXECUCOES];
     int* arr = malloc(tamanho * sizeof(int));
     int* copia = malloc(tamanho * sizeof(int));
-
-    printf("\n--- %s ---\n", nomeCaso);
-    printf("Tamanho do array: %d\n", tamanho);
 
     for (int i = 0; i < EXECUCOES; i++) {
         preencher(arr, tamanho);
@@ -90,9 +85,8 @@ void testarCaso(const char* nomeCaso, int tamanho, void (*preencher)(int*, int))
     double media = calcularMedia(tempos);
     double desvio = calcularDesvioPadrao(tempos, media);
 
-    printf("Execuções: %d\n", EXECUCOES);
-    printf("Tempo médio: %.6f segundos\n", media);
-    printf("Desvio padrão: %.6f segundos\n", desvio);
+    // Grava no CSV
+    fprintf(arquivo, "%d,%s,%.6f,%.6f\n", tamanho, nomeCaso, media, desvio);
 
     free(arr);
     free(copia);
@@ -104,13 +98,24 @@ int main() {
     int tamanhos[] = {100, 1000, 10000, 1000000};
     int total = sizeof(tamanhos) / sizeof(tamanhos[0]);
 
+    FILE* arquivo = fopen("dadosParaTabela.csv", "w");
+    if (!arquivo) {
+        perror("Erro ao criar o arquivo CSV");
+        return 1;
+    }
+
+    // Cabeçalho do CSV
+    fprintf(arquivo, "Tamanho,Caso,Tempo Medio,Desvio Padrao\n");
+
     for (int i = 0; i < total; i++) {
         int tamanho = tamanhos[i];
 
-        testarCaso("Melhor Caso (Ordenado Crescente)", tamanho, preencherMelhorCaso);
-        testarCaso("Caso Médio (Aleatório)", tamanho, preencherAleatorio);
-        testarCaso("Pior Caso (Ordenado Decrescente)", tamanho, preencherPiorCaso);
+        testarCasoCSV(arquivo, "Melhor", tamanho, preencherMelhorCaso);
+        testarCasoCSV(arquivo, "Medio", tamanho, preencherAleatorio);
+        testarCasoCSV(arquivo, "Pior", tamanho, preencherPiorCaso);
     }
 
+    fclose(arquivo);
+    printf("Arquivo 'dadosParaTabela.csv' gerado com sucesso.\n");
     return 0;
 }

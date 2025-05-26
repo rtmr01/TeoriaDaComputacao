@@ -72,12 +72,41 @@ def grafico_curva_teorica_vs_c():
     plt.tight_layout()
     plt.show()
 
+def gerar_tabela_c_csv():
+    if not os.path.exists("dadosParaTabela.csv"):
+        print("Arquivo dadosParaTabela.csv não encontrado.")
+        return
+
+    df = pd.read_csv("dadosParaTabela.csv")
+
+    print("\n===== TABELA: TEMPO MÉDIO =====")
+    print(df.pivot(index="Tamanho", columns="Caso", values="Tempo Medio").round(6))
+
+    print("\n===== TABELA: DESVIO PADRÃO =====")
+    print(df.pivot(index="Tamanho", columns="Caso", values="Desvio Padrao").round(6))
+
+    # Gráfico de barras agrupadas
+    pivot_df = df.pivot(index="Tamanho", columns="Caso", values="Tempo Medio")
+    pivot_df = pivot_df[["Melhor", "Medio", "Pior"]]  # Ordena as colunas
+
+    ax = pivot_df.plot(kind='bar', figsize=(10, 6))
+    ax.set_title("Tempo Médio do Merge Sort por Tamanho e Caso")
+    ax.set_xlabel("Tamanho do Array")
+    ax.set_ylabel("Tempo Médio (s)")
+    ax.grid(True, axis='y')
+    plt.xticks(rotation=0)
+    plt.tight_layout()
+    plt.legend(title="Caso")
+    plt.show()
+
+
 def menu():
     while True:
         print("\n=== MENU DE GRÁFICOS ===")
         print("1 - Curva Teórica vs Merge Sort (Python)")
         print("2 - Comparação Python vs C")
         print("3 - Curva Teórica vs Merge Sort (C)")
+        print("4 - Gerar Tabela a partir do CSV de C")
         print("0 - Sair")
         opcao = input("Escolha a opção: ")
 
@@ -87,6 +116,8 @@ def menu():
             grafico_comparacao_python_c()
         elif opcao == "3":
             grafico_curva_teorica_vs_c()
+        elif opcao == "4":
+            gerar_tabela_c_csv()
         elif opcao == "0":
             print("Encerrando...")
             break
